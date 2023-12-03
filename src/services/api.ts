@@ -1,8 +1,9 @@
+import { getSDBaseAPI } from '@/configs';
 import request from '@/utils/request';
 
 
 export async function listSDModels(): Promise<unknown[]|undefined> {
-  const sdBaseUrl = localStorage.getItem("SD_BASE_URL");
+  const sdBaseUrl = getSDBaseAPI();
   if (!sdBaseUrl) {
     return;
   }
@@ -11,7 +12,7 @@ export async function listSDModels(): Promise<unknown[]|undefined> {
 }
 
 export async function listLoras(): Promise<unknown[]|undefined> {
-  const sdBaseUrl = localStorage.getItem("SD_BASE_URL");
+  const sdBaseUrl = getSDBaseAPI();
   if (!sdBaseUrl) {
     return;
   }
@@ -20,7 +21,7 @@ export async function listLoras(): Promise<unknown[]|undefined> {
 }
 
 export async function listSDVAEs(): Promise<unknown[]|undefined> {
-  const sdBaseUrl = localStorage.getItem("SD_BASE_URL");
+  const sdBaseUrl = getSDBaseAPI();
   if (!sdBaseUrl) {
     return;
   }
@@ -29,7 +30,7 @@ export async function listSDVAEs(): Promise<unknown[]|undefined> {
 }
 
 export async function txt2img(params: Record<string, unknown>): Promise<unknown> {
-  const sdBaseUrl = localStorage.getItem("SD_BASE_URL");
+  const sdBaseUrl = getSDBaseAPI();
   if (!sdBaseUrl) {
     return;
   }

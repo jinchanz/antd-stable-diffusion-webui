@@ -29,3 +29,8 @@ export const getOrInitConfig = (): StableDiffusionWebUIConfig => {
 export const saveConfig = (config: StableDiffusionWebUIConfig) => {
   localStorage.setItem('DefaultStableDiffusionWebUIConfig', JSON.stringify(config))
 };
+
+export const getSDBaseAPI = () => {
+  const config = getOrInitConfig();
+  return config?.generalConfig?.baseAPI?.value;
+}

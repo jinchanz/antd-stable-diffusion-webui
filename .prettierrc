@@ -1,0 +1,15 @@
+{
+  "tabWidth": 2,
+  "useTabs": false,
+  "printWidth": 120,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "importOrder": [
+    "^react(.*)",
+    "antd/(.*)",
+    "<THIRD_PARTY_MODULES>",
+    "@/(.*)",
+    "^[./].*(?<!\\.(c|le|sc)ss)$",
+    "\\.(c|le|sc)ss$"
+  ]
+}

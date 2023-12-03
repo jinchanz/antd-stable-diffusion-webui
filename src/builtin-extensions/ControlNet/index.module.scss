@@ -1,0 +1,52 @@
+.cnSamplerArea {
+  display: flex;
+  padding: 12px;
+  gap: 12px;
+  border-radius: 5px;
+  background-color: white;
+}
+
+.cnSamplerArea > .item {
+  flex: 1;
+  width: 100%;
+  margin-bottom: 0;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.item > div {
+  width: 100%;
+}
+
+.imageUploader > .imgWrapper {
+  position: relative;
+  max-height: 512px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(255, 255, 255);
+  background-image: linear-gradient(45deg, rgba(0, 0, 0, 0.03) 25%, transparent 25%), linear-gradient(-45deg, rgba(0, 0, 0, 0.03) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(0, 0, 0, 0.03) 75%), linear-gradient(-45deg, transparent 75%, rgba(0, 0, 0, 0.03) 75%);
+  background-position: 0px 0px, 0px 10px, 10px -10px, -10px 0px;
+  background-size: 20px 20px;
+  border: 2px solid rgb(227, 227, 227) !important;
+  border-radius: 5px !important;
+}
+
+.imgWrapper > .closeBtn {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+@media (max-width: 600px) { 
+  .cnSamplerArea {
+    display: flex;
+    padding: 12px;
+    flex-direction: column;
+    gap: 12px;
+    border-radius: 5px;
+    background-color: white;
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "name": "dashboard-assets",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "eslint": "eslint ./src --cache --ext .js,.jsx,.ts,.tsx",
+    "eslint:fix": "npm run eslint -- --fix",
+    "stylelint": "stylelint \"src/**/*.{css,scss,less}\" --cache",
+    "stylelint:fix": "npm run stylelint -- --fix",
+    "prettier": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,scss,less,json,md}\"",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    ".{ts,tsx,json,md}": "prettier --write",
+    "*.tsx?": "npm run eslint:fix",
+    "*.{css,scss,less}": "npm run stylelint:fix"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.2.5",
+    "ali-oss": "^6.18.1",
+    "antd": "^5.6.3",
+    "axios": "^1.4.0",
+    "classnames": "^2.3.2",
+    "lodash-es": "^4.17.21",
+    "moment": "^2.29.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-infinite-scroll-component": "^6.1.0",
+    "react-intl": "^6.4.4",
+    "react-router-dom": "^6.14.0",
+    "react-sketch-canvas": "^6.2.0",
+    "zustand": "^4.3.8"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.0.3",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "path": "^0.12.7",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5",
+    "vite-plugin-mkcert": "^1.16.0",
+    "@applint/spec": "^1.2.3",
+    "@trivago/prettier-plugin-sort-imports": "^4.1.1",
+    "@types/axios": "^0.14.0",
+    "@types/node": "^18.11.17",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.2",
+    "prettier": "^2.8.8",
+    "sass": "^1.63.6",
+    "stylelint": "^15.2.0"
+  }
+}

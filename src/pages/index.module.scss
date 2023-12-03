@@ -1,0 +1,114 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+}
+
+.layout > .menuWrapper {
+  width: 100%;
+}
+
+.layout > .contentWrapper {
+  flex: auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+}
+
+.menuWrapper > .dashboardMenu {
+  display: flex;
+  flex-direction: row;
+  width: 256px;
+}
+
+.dashboardMenu > .toggleMenu {
+  position: fixed;
+  bottom: 1rem;
+}
+
+.contentWrapper > .dynamicContentWrapper {
+  height: 100vh;
+  overflow-y: scroll;
+}
+
+.logo {
+  width: 64px;
+  height: 64px;
+  padding: 0.5rem;
+  margin-right: 1rem;
+  cursor: pointer;
+  background-image: url(https://i.ablula.tech/malette/assets/logo.png!xs);
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 2rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.header > .right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: end;
+  flex: auto;
+  gap: 0.5rem;
+}
+
+.hozMenu {
+  visibility: visible;
+  width: 100%;
+}
+
+.verMenu {
+  display: none;
+}
+
+@media (max-width: 600px)  {
+  .header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  .signIn {
+    display: none;
+  }
+  .hozMenu {
+    visibility: hidden;
+    width: 0;
+  }
+  .verMenu {
+    display: flex;
+    padding: 0.5rem 0 0.3rem 0;
+  }
+}
+
+.contactSection {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.contactSection > .contactLabel {
+  font-size: 24px;
+  color: black;
+  font-weight: 400;
+}
+
+.contactSection > .contactContent {
+  font-size: 20px;
+  color: #585d66;
+  font-weight: 200;
+  user-select: text;
+}

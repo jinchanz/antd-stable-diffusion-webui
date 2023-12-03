@@ -55,7 +55,7 @@ const SD = () => {
 
   const init = useCallback(() => {
     const storedConfig = getOrInitConfig();
-    if (!storedConfig?.generalConfig?.baseAPI) {
+    if (!storedConfig?.generalConfig?.baseAPI?.value) {
       setShowSettingModal(true);
       setGlobalLoading(false);
       return;
@@ -91,6 +91,7 @@ const SD = () => {
     const sdUrl = config?.generalConfig.baseAPI?.value;
     if (!sdUrl) {
       setShowSettingModal(true);
+      messageApi.error("未设置 Stable Diffusion WebUI 地址，请点击右下角🔧进行设置")
       return;
     }
     const { extensionParams = {} } = params;

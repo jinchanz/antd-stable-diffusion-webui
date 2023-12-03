@@ -6,7 +6,7 @@ export const DefaultStableDiffusionWebUIConfig: StableDiffusionWebUIConfig = {
     baseAPI: {
       tooltip: 'Stable Diffusion 地址',
       contentType: 'string',
-      value: 'abc'
+      value: ''
     }
   },
   builtinExtensions

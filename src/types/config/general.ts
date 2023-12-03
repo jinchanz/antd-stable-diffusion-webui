@@ -1,5 +1,7 @@
+import { ExtensionOption } from "./extension";
+
 export interface GeneralConfig {
 
-  baseAPI?: string;
+  baseAPI?: ExtensionOption;
 
 }

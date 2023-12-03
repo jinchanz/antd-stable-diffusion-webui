@@ -37,7 +37,6 @@ const App: React.FC = () => {
     },
   }[locale]
 
-  console.log('localeData: ', localeData)
   return (
     <ConfigProvider
       locale={localeData}

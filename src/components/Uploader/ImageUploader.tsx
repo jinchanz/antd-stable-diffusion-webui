@@ -37,33 +37,11 @@ function ImageUploader(props: { onUploaded: (file: unknown) => void }) {
     // setSpinning(true);
     return file;
   };
-
-  const handleLoRAUploaded = useCallback(async (info) => {
-    const res = await readFile(info.file);
-    console.log('res: ', res);
-    // const imgInfo = await getFileWidthAndHeight(info.file.originFileObj);
-    // try {
-    //   onUploaded?.({
-    //     ...info.file,
-    //     ...imgInfo,
-    //     fileList: info.fileList
-    //   })
-    // } catch (e) {
-    //   console.error(`出现问题: ${e?.message}`);
-    //   console.log('e instanceof Error: ', e instanceof Error)
-    //   if (e instanceof Error) {
-    //     messageApi.error(`出现问题: ${e?.message}`)
-    //   }
-    // } finally {
-    //   setSpinning(false);
-    // }
-  }, [messageApi, onUploaded])
-
+  
   const uploadProps: UploadProps = {
     name: 'file',
     accept: '.jpg,.png,jpeg',
     beforeUpload,
-    onChange: handleLoRAUploaded,
     customRequest: async (info) => {
       const res = await readFile(info.file);
       console.log('res: ', res);

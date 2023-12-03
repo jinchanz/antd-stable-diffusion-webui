@@ -1,11 +1,13 @@
 import { ToolOutlined } from "@ant-design/icons";
-import { Modal, Input, Button, FloatButton, Tabs, TabPaneProps, InputNumber, Form } from "antd";
+import { Modal, Input, FloatButton, Tabs, TabPaneProps, InputNumber, Form, message } from "antd";
 
 import styles from './index.module.scss';
 import { useCallback, useEffect, useState } from "react";
-import { StableDiffusionWebUIConfig } from "..";
-import { GeneralConfig } from "../general";
-import { ExtensionConfig } from "../../types/config/extension";
+import { ExtensionConfig, ExtensionOption } from "../../types/config/extension";
+import { StableDiffusionWebUIConfig } from "@/types/config";
+import { GeneralConfig } from "@/types/config/general";
+import { getOrInitConfig, saveConfig } from "..";
+import { isValidHttpUrl } from "@/utils";
 
 export interface ConfigPanelProps {
 
@@ -17,7 +19,6 @@ export interface ConfigPanelProps {
 
 export interface GeneralConfigPanelProps {
   config?: GeneralConfig;
-  onConfirm?: (config: GeneralConfig) => void;
 }
 
 export interface Tab extends Omit<TabPaneProps, 'tab'> {
@@ -25,46 +26,29 @@ export interface Tab extends Omit<TabPaneProps, 'tab'> {
   label: React.ReactNode;
 }
 
-const GeneralConfigPanel = (props: GeneralConfigPanelProps) => {
-
-  const { config = {}, onConfirm } = props;
-  const { baseAPI } = config;
-  const [ baseAPIUrl, setBaseAPIUrl ] = useState(baseAPI);
-
-  const handleBindSDUrl = useCallback(() => {
-    if (!baseAPIUrl) return;
-    onConfirm?.({
-      ...config,
-      baseAPI: baseAPIUrl
-    });
-  }, [baseAPIUrl, config, onConfirm]);
-
+const GeneralConfigPanel = () => {
   return <div className={styles.bindSDUrlForm}>
-    <Form.Item label="baseAPI" name="baseAPI">
-      <Input value={baseAPI} onChange={(item) => {
-        console.log('item: ', item.target.value);
-        setBaseAPIUrl(item.target.value as string);
-      }} />
+    <Form.Item label="baseAPI" name={[ 'generalConfig', "baseAPI" ]}>
+      <Input />
     </Form.Item>
   </div>;
 };
 
-function buildExtensionConfigItemUI(options: Record<string, unknown>) {
+function buildConfigItemUI(name, options: GeneralConfig | Record<string, ExtensionOption>) {
   const configItems = Object.keys(options);
 
   return <div>
     {
       configItems.map(key => {
         const item = options[key];
-    
-        switch(typeof(item)) {
+        switch(item.contentType || typeof item.value) {
           case "string":
-            return <Form.Item key={key} label={key} name={['controlnet', key]}>
+            return <Form.Item tooltip={item.tooltip} key={key} label={key} name={[name, key]}>
               <Input />
             </Form.Item>;
           case "number":
-            return <Form.Item key={key} label={key} name={['controlnet', key]}>
-              <InputNumber />
+            return <Form.Item tooltip={item.tooltip} key={key} label={key} name={[name, key]}>
+              <InputNumber style={{ width: '100%' }} />
             </Form.Item>;
           case "bigint":
           case "boolean":
@@ -72,7 +56,7 @@ function buildExtensionConfigItemUI(options: Record<string, unknown>) {
           case "undefined":
           case "object":
           case "function":
-            return <Form.Item key={key} label={key} name={['controlnet', key]}>
+            return <Form.Item tooltip={item.tooltip} key={key} label={key} name={[name, key]}>
               <Input />
             </Form.Item>;
           default:
@@ -95,33 +79,97 @@ function buildExtensionConfigUI(extensions?: ExtensionConfig[]) : Tab[]|null {
 
       key: item.name,
       label: item.title,
-      children: buildExtensionConfigItemUI(item.name, item.options)
+      children: buildConfigItemUI(item.name, item.options)
 
     };
 
   });
 }
 
+function buildInitialValues(config: StableDiffusionWebUIConfig) {
+  const values = {};
+  const { generalConfig, extensions = [], builtinExtensions = [] } = config;
+
+  if (typeof generalConfig === 'object') {
+    if (!values['generalConfig']) {
+      values['generalConfig'] = {};
+    }
+    Object.keys(generalConfig).forEach(key => {
+      values['generalConfig'][key] = generalConfig[key].value;
+    });
+  }
+
+  const mergedExtensions = builtinExtensions.concat(extensions);
+  mergedExtensions.forEach(item => {
+    if (!values[item.name]) {
+      values[item.name] = {};
+    }
+    const { options } = item;
+    if (typeof options === 'object') {
+      Object.keys(options).forEach(key => {
+        values[item.name][key] = options[key].value;
+      });
+    }
+  })
+  
+  return {
+    ...values,
+  }
+}
+
 export const ConfigPanel = (props: ConfigPanelProps) => {
-  const { open: propsOpen, config = {} as StableDiffusionWebUIConfig, onOk } = props;
+  const { open: propsOpen, config = getOrInitConfig() as StableDiffusionWebUIConfig, onOk } = props;
   const [ open, setOpen ] = useState(propsOpen);
   const [ form ] = Form.useForm();
-  const handleOnGeneralConfigConfirm = useCallback((updates: GeneralConfig) => {
-    const updatedConfig: StableDiffusionWebUIConfig = {
-      ...config,
-      generalConfig: updates,
-    }
-    onOk?.(updatedConfig)
-  }, [config, onOk]);
+  const [ messageApi, contextHolder ] = message.useMessage();
 
   const handleSaveConfig = useCallback(() => {
     const updates = form.getFieldsValue();
     console.log('updates: ', updates);
-  }, [form]);
+    console.log('config: ', config);
+    const { generalConfig = {}, extensions = [], builtinExtensions = [] } = config;
+    const mergedExtensions = builtinExtensions.concat(extensions);
+    Object.keys(updates).forEach(item => {
+      const updateDetail = updates[item];
+      if (item === 'generalConfig') {
+        Object.keys(updateDetail).forEach(key => {
+          if (!generalConfig[key]) {
+            generalConfig[key] = {};
+          }
+          generalConfig[key].value = updateDetail[key];
+        });
+      } else {
+        mergedExtensions?.forEach(extension => {
+          if (item === extension.name) {
+            Object.keys(extension.options).forEach(option => {
+              if (typeof updateDetail[option] != 'undefined') {
+                extension.options[option].value = updateDetail[option];
+              }
+            });
+          }
+        })
+      }
+    });
 
-  console.log('config.builtinExtensions: ', config.builtinExtensions);
+    const _url = config.generalConfig.baseAPI?.value as string;
+    const isValid = isValidHttpUrl(_url);
+    if (!isValid) {
+      messageApi.error("请输入正确的 url")
+      return;
+    }
+    if (_url.endsWith('/')) {
+      if (!config.generalConfig.baseAPI) {
+        config.generalConfig.baseAPI = {} as ExtensionOption;
+      }
+      config.generalConfig.baseAPI.value = _url.slice(0, -1);
+    }
+    saveConfig(config);
+    setOpen(false);
+    onOk?.(config);
+  }, [config, form, messageApi, onOk]);
+
   const builtinExtensionUI = buildExtensionConfigUI(config.builtinExtensions);
-  console.log('builtinExtensionUI: ', builtinExtensionUI);
+  const initialValues = buildInitialValues(config);
 
   useEffect(() => {
     setOpen(propsOpen);
@@ -129,6 +177,7 @@ export const ConfigPanel = (props: ConfigPanelProps) => {
 
 
   return <div>
+    { contextHolder }
     <Modal
       className={styles.configContainer}
       title={<h1>设置</h1>} 
@@ -137,17 +186,14 @@ export const ConfigPanel = (props: ConfigPanelProps) => {
       onCancel={setOpen.bind(null, false)}
       onOk={handleSaveConfig}
     >
-      <Form layout="vertical" form={form}>
+      <Form layout="vertical" form={form} initialValues={initialValues}>
         <div className={styles.configContentWrapper}>
           <Tabs
             items={[
               {
                 key: 'General',
                 label: '通用',
-                children: <GeneralConfigPanel 
-                  config={config.generalConfig}
-                  onConfirm={handleOnGeneralConfigConfirm} 
-                />
+                children: buildConfigItemUI('generalConfig', config.generalConfig)
               },
               ...(builtinExtensionUI || [])
             ]}

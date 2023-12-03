@@ -1,7 +1,7 @@
 import request from '@/utils/request';
 
 
-export async function listSDModels(): Promise<unknown> {
+export async function listSDModels(): Promise<unknown[]|undefined> {
   const sdBaseUrl = localStorage.getItem("SD_BASE_URL");
   if (!sdBaseUrl) {
     return;
@@ -10,7 +10,7 @@ export async function listSDModels(): Promise<unknown> {
   return response;
 }
 
-export async function listLoras(): Promise<unknown> {
+export async function listLoras(): Promise<unknown[]|undefined> {
   const sdBaseUrl = localStorage.getItem("SD_BASE_URL");
   if (!sdBaseUrl) {
     return;
@@ -19,7 +19,7 @@ export async function listLoras(): Promise<unknown> {
   return response;
 }
 
-export async function listSDVAEs(): Promise<unknown> {
+export async function listSDVAEs(): Promise<unknown[]|undefined> {
   const sdBaseUrl = localStorage.getItem("SD_BASE_URL");
   if (!sdBaseUrl) {
     return;

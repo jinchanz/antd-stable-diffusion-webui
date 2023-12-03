@@ -93,7 +93,7 @@ export interface ControlNetUnit {
   processor_res?: number;
 
   // 传递给算法的是 image 参数，内容为 base64 编码字符串，db 存储和接口流转的为 image_path
-  image?: string;
+  input_image?: string;
   image_path?: string;
 
   loopback?: boolean;

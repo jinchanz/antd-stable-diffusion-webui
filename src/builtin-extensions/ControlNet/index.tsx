@@ -2,11 +2,12 @@ import { Tabs } from "antd"
 
 import ControlNetUnitPane from "./ControlNetUnit"
 import { ControlNetUnit } from "@/builtin-extensions/ControlNet/types";
-
-export { config } from './config';
+import { FC } from "react";
+import { ExtensionOption } from "@/types/config/extension";
+import { Tab } from "@/configs/ui";
 
 export interface ControlNetPaneProps {
-  size: number;
+  options: Record<string, ExtensionOption>
   data: unknown[],
   onChange: (index: number, data: ControlNetUnit) => void;
 }
@@ -23,20 +24,31 @@ function getCurrentControlType(cn) {
 }
 
 function generateControlNetUnitList(data, size, onChange) {
-  return data?.map((item, index) => {
-    const itemObj = typeof item === 'string' ? JSON.parse(item) : item;
-
-    return {
-      key: `cn${index}`,
-      label: <TabTitle title={`ControlNet Unit ${index} ${getCurrentControlType(itemObj)}`} enable={itemObj?.enabled} />,
-      children: <ControlNetUnitPane index={0} data={itemObj} onChange={onChange} />
+  const cnList: Tab[] = [];
+  if (!data?.length) {
+    data = [];
+  }
+  
+  for (let i = 0; i < size; i++) {
+    const itemObj = data?.[i] || {};
+    data[i] = itemObj;
+    cnList[i] = {
+      key: `cn${i}`,
+      label: <TabTitle title={`ControlNet Unit ${i} ${getCurrentControlType(itemObj)}`} enable={itemObj?.enabled} />,
+      children: <ControlNetUnitPane index={i} data={itemObj} onChange={(index, value) => {
+        data[index] = value;
+        onChange(data);
+      }} />
     }
-  });
+  }
+  return cnList;
 }
 
-export function ControlNetPane(props: ControlNetPaneProps) {
+export const ControlNetPane: FC = (props: ControlNetPaneProps) => {
 
-  const { size, onChange, data } = props;
+  const { options, onChange, data } = props;
+  const { control_net_unit_count } = options;
+  const { value: size } = control_net_unit_count;
   const cnList = generateControlNetUnitList(data, size, onChange);
 
   return <div>

@@ -126,13 +126,10 @@ function ControlNetUnitPane(props: ControlNetUnitPaneProps) {
   
   const { default_option, default_model } = currentControlTypeData || {};
 
-  console.log('data: ', data);
-  console.log('imageInfo: ', imageInfo);
-
   return <div>
     <div className={styles.imageUploader}>
       {
-        data.image_path && imageInfo?.width
+        data.input_image && imageInfo?.width
           ? <div className={styles.imgWrapper}>
               { data?.module?.startsWith?.('inpaint') 
                 ? <ReactSketchCanvas
@@ -143,15 +140,15 @@ function ControlNetUnitPane(props: ControlNetUnitPaneProps) {
                     height='375'
                     width={`${imageInfo.width*375/imageInfo.height}`}
                     preserveBackgroundImageAspectRatio="meet"
-                    backgroundImage={`https://i.ablula.tech/${data.image_path}`}
+                    backgroundImage={`https://i.ablula.tech/${data.input_image}`}
                     strokeWidth={4}
                     strokeColor="red"
                   /> 
-                : <ImageComp height={375} style={{objectFit: 'contain'}} src={`https://i.ablula.tech/${data.image_path}`} /> 
+                : <ImageComp height={375} style={{objectFit: 'contain'}} src={data.input_image} /> 
               }
-              <Button className={styles.closeBtn} onClick={handleImageUploaderChange.bind(null, 'image_path', { url: undefined})} type='text'><CloseOutlined /></Button>
+              <Button className={styles.closeBtn} onClick={handleImageUploaderChange.bind(null, 'input_image', { url: undefined})} type='text'><CloseOutlined /></Button>
             </div>
-          : <ImageUploader onUploaded={handleImageUploaderChange.bind(null, 'image_path')} />
+          : <ImageUploader onUploaded={handleImageUploaderChange.bind(null, 'input_image')} />
       }
     </div>
     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '24px 0' }}>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Collapse, Form, Image, Select, Space, Spin, Tabs, message } from 'antd';
 
@@ -13,6 +13,7 @@ import { isValidHttpUrl } from '@/utils';
 import { getOrInitConfig } from '@/configs';
 import { ConfigPanel } from '@/configs/ui';
 import { StableDiffusionWebUIConfig } from '@/types/config';
+import { buildExtensionUI } from '@/extensions';
 
 export interface FieldData {
   name: string | number | (string | number)[];
@@ -31,65 +32,77 @@ const defaultCNCount = localStorage.getItem("CONTROLNET_COUNT") || 4;
 const SD = () => {
   const [ config, setConfig ] = useState<StableDiffusionWebUIConfig>();
   const [ globalLoading, setGlobalLoading ] = useState(false);
-  const [ sdBaseUrl, setSDBaseurl ] = useState<string>(defaultBaseSDURL as string)
-  const [ sdModels, setSDModels ] = useState([]);
-  const [ loras, setLoras ] = useState([]);
-  const [ sdVAEs, setSDVAEs ] = useState([]);
+  const [ sdModels, setSDModels ] = useState<unknown[]>([]);
+  const [ loras, setLoras ] = useState<unknown[]>([]);
+  const [ sdVAEs, setSDVAEs ] = useState<unknown[]>([]);
   const [ messageApi, contextHolder ] = message.useMessage();
   const [ images, setImages ] = useState([]);
   const [ generating, setGenerating ] = useState(false);
   const [ form ] = Form.useForm();
-  const [previewIndex, setPreviewIndex] = useState(0);
-  const [showSettingModal, setShowSettingModal] = useState(false);
-  const [selectedLoRAs, setSelectedLoRAs] = useState<unknown[]>([]);
+  const [ previewIndex, setPreviewIndex ] = useState(0);
+  const [ showSettingModal, setShowSettingModal ] = useState(false);
+  const [ selectedLoRAs, setSelectedLoRAs ] = useState<unknown[]>([]);
+  const [ params, setParams ] = useState<Record<string, unknown>>({});
 
-  useEffect(() => {
+  const extensionsUI = buildExtensionUI(params?.extensionParams, (updates) => {
+    setParams({
+      ...params,
+      extensionParams: {
+        ...updates
+      }
+    })
+  });
+
+  const init = useCallback(() => {
     const storedConfig = getOrInitConfig();
-    setConfig(storedConfig);
-    if (!config?.generalConfig?.baseAPI) {
+    if (!storedConfig?.generalConfig?.baseAPI) {
       setShowSettingModal(true);
       setGlobalLoading(false);
       return;
     }
     const fetchSDModels = async () => {
       const sdModelsRes = await listSDModels()
-      setSDModels(sdModelsRes);
+      setSDModels(sdModelsRes as unknown[]);
     }
     const fetchLoras = async () => {
-      const sdModelsRes = await listLoras()
-      setLoras(sdModelsRes);
+      const loraRes = await listLoras()
+      setLoras(loraRes as unknown[]);
     }
     const fetchSDVAEs = async () => {
       const sdVAERes = await listSDVAEs()
-      setSDVAEs(sdVAERes);
+      setSDVAEs(sdVAERes as unknown[]);
     }
     fetchSDModels();
     fetchSDVAEs();
     fetchLoras();
-  }, [config?.baseAPI]);
+    setConfig(storedConfig)
+  }, []);
 
-  const handleBindSDUrl = () => {
-    let _url = sdBaseUrl;
-    const isValid = isValidHttpUrl(_url);
-    if (!isValid) {
-      messageApi.error("请输入正确的 url")
-      return;
-    }
-    if (_url.endsWith('/')) {
-      _url = _url.slice(0, -1);
-    }
-    localStorage.setItem("SD_BASE_URL", _url);
-    setShowSettingModal(false);
-  }
+  const handleConfigChanged = useCallback((updates) => {
+    setConfig(updates)
+    init();
+  }, [init])
+
+  useEffect(() => {
+    init();
+  }, [init])
 
   const handleGenerate = async () => {
-    const sdUrl = localStorage.getItem("SD_BASE_URL");
+    const sdUrl = config?.generalConfig.baseAPI?.value;
     if (!sdUrl) {
       setShowSettingModal(true);
       return;
     }
-    const params = form.getFieldsValue();
-    const { sd_model_checkpoint, sd_vae } = params;
+    const { extensionParams = {} } = params;
+    const alwayson_scripts = {};
+    Object.keys(extensionParams).forEach(item => {
+      alwayson_scripts[item] = {
+        args: extensionParams[item].filter(item => item?.enabled)
+      }
+    });
+    
+    const formFields = form.getFieldsValue();
+    const { sd_model_checkpoint, sd_vae, ...sdParams } = formFields;
     const override_settings = {};
 
     if (sd_model_checkpoint) {
@@ -107,15 +120,16 @@ const SD = () => {
     if (selectedLoRAs) {
       selectedLoRAs.forEach(item => {
         const loraWeight = item.loraWeight || 1;
-        params.prompt += `,<lora:${item.name}:${loraWeight}>`
+        sdParams.prompt += `,<lora:${item.name}:${loraWeight}>`
       });
     }
 
     setGenerating(true);
 
     const txt2imgRes = await txt2img({
-      ...params,
-      override_settings
+      ...sdParams,
+      override_settings,
+      alwayson_scripts
     });
     console.log(txt2imgRes);
     if (txt2imgRes?.images) {
@@ -179,18 +193,7 @@ const SD = () => {
               ]
             }>  
             </Tabs>
-            <Collapse items={[
-              {
-                key: 'ControlNet',
-                label: <span className={styles.cnLabel}>ControlNet<div className={styles.cnBadge}>{4} unit</div></span>,
-                children: <ControlNetPane
-                  size={defaultCNCount}
-                  onChange={(index, data) => {
-                    
-                  }} 
-                />,
-              }
-            ]} />
+            { extensionsUI }
           </Form>
           <div className={styles.miniImageGallery}>
             <div className={styles.bigImage}>
@@ -279,7 +282,7 @@ const SD = () => {
           </div>
         </div>
       </div>
-      <ConfigPanel open={showSettingModal} config={config} />
+      <ConfigPanel open={showSettingModal} config={config} onOk={handleConfigChanged} />
     </Spin>
   );
 }
